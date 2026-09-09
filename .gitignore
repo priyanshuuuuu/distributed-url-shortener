@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment variables / secrets
+.env
+*.pem
+
+# OS junk
+.DS_Store
+
+# Editor
+.vscode/settings.json
