@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Make sure this directory is importable regardless of where pytest is run from
 sys.path.insert(0, os.path.dirname(__file__))

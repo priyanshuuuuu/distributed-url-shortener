@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy import func
 from database import Base
+from sqlalchemy import Column, DateTime, Integer, String, func
+
 
 class URL(Base): # Base is from db.py which turns this ordinary-looking Python class into something SQLAlchemy knows how to map onto a real SQL table.
     __tablename__ = "urls"

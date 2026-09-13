@@ -1,13 +1,13 @@
 import random
 import string
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, HttpUrl
-from sqlalchemy.orm import Session
-from sqlalchemy import select
 
-from database import engine, get_db, Base
+from database import Base, engine, get_db
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from models import URL
+from pydantic import BaseModel, HttpUrl
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 Base.metadata.create_all(bind = engine) #creates the table urls only if it already doesnt exist
 
