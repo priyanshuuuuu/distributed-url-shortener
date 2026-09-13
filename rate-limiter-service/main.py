@@ -1,10 +1,10 @@
+import logging
 import os
 import time
-import logging
 from pathlib import Path
 
-import redis
 import httpx
+import redis
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
@@ -14,7 +14,7 @@ logger = logging.getLogger("rate-limiter")
 app = FastAPI(title="Rate Limiter Service")
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 SHORTENER_URL = os.getenv("SHORTENER_URL", "http://shortener-service:8000")
 
 MAX_TOKENS = int(os.getenv("RATE_LIMIT_MAX_TOKENS", 10))     # bucket capacity
@@ -97,7 +97,7 @@ def health():
     try:
         redis_client.ping()
         redis_status = "connected"
-    except Exception:
+    except redis.exceptions.RedisError:
         redis_status = "unreachable"
     return {"status": "ok", "service": "rate-limiter", "redis": redis_status, "fail_open": FAIL_OPEN}
 
