@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint shortener service
+        run: ruff check shortener-service/
+      - name: Lint rate limiter service
+        run: ruff check rate-limiter-service/
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shortener_user
+          POSTGRES_PASSWORD: shortener_pass
+          POSTGRES_DB: shortener_db
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U shortener_user -d shortener_db"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install shortener deps
+        run: pip install -r shortener-service/requirements.txt pytest httpx
+
+      - name: Run shortener tests
+        working-directory: shortener-service
+        env:
+          DATABASE_URL: postgresql://shortener_user:shortener_pass@localhost:5432/shortener_db
+        run: pytest -v
+
+      - name: Install rate-limiter deps
+        run: pip install -r rate-limiter-service/requirements.txt pytest
+
+      - name: Run rate limiter tests
+        working-directory: rate-limiter-service
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: pytest -v
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build shortener image
+        run: docker build -t url-shortener:ci ./shortener-service
+      - name: Build rate-limiter image
+        run: docker build -t rate-limiter:ci ./rate-limiter-service
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image for scanning
+        run: docker build -t url-shortener:scan ./shortener-service
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "url-shortener:scan"
+          format: "table"
+          exit-code: "0"
+          severity: "CRITICAL,HIGH"
