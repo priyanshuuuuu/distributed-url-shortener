@@ -17,8 +17,8 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 SHORTENER_URL = os.getenv("SHORTENER_URL", "http://shortener-service:8000")
 
-MAX_TOKENS = int(os.getenv("RATE_LIMIT_MAX_TOKENS", 10))     # bucket capacity
-REFILL_RATE = float(os.getenv("RATE_LIMIT_REFILL_RATE", 1))  # tokens/sec
+MAX_TOKENS = int(os.getenv("RATE_LIMIT_MAX_TOKENS", "10"))     # bucket capacity
+REFILL_RATE = float(os.getenv("RATE_LIMIT_REFILL_RATE", "1"))  # tokens/sec
 
 # ---- Fault tolerance policy ----
 # FAIL_OPEN=true  -> if Redis is unreachable, let requests through (favours availability)
