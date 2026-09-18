@@ -74,6 +74,21 @@ curl -i http://localhost/shorten -X POST -H "Content-Type: application/json" -d 
 # Fails OPEN (200) or CLOSED (429) depending on the FAIL_OPEN env var — no code change needed
 ```
 
+## Proof it actually works
+
+**The rate limit enforcing correctly** — first 10 requests succeed, then it switches to rejecting:
+
+![Rate limit test](docs/screenshots/rate-limit-test.png)
+
+**A full round trip** — shortening a real URL, then following the short code to its destination:
+
+![Shorten and redirect](docs/screenshots/shorten-and-redirect.png)
+
+**Fail-open in action** — Redis was killed mid-test, and the rate limiter logged the failure and kept serving traffic instead of crashing, independently on two separate replicas:
+
+![Fail-open behavior, replica 1](docs/screenshots/fail-open-log-1.png)
+![Fail-open behavior, replica 2](docs/screenshots/fail-open-log-2.png)
+
 ## Tech stack
 
 | Layer | Choice |
